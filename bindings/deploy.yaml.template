@@ -1,0 +1,78 @@
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: queuetrigger
+  namespace: dapr-demo-binding
+spec:
+  type: bindings.azure.storagequeues
+  version: v1
+  metadata:
+  - name: accountName
+    secretKeyRef:
+      name: bindings-secret
+      key: blobAccountName
+  - name: accountKey
+    secretKeyRef:
+      name: bindings-secret
+      key: blobAccountKey
+  - name: queueName
+    value: "inputs"
+  - name: decodeBase64
+    value: true
+  - name: direction
+    value: "input"
+---
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+    name: cosmosdb
+    namespace: dapr-demo-binding
+spec:
+  type: bindings.azure.cosmosdb
+  version: v1
+  metadata:
+    - name: url
+      secretKeyRef:
+        name: bindings-secret
+        key: cosmosUrl 
+    - name: masterKey
+      secretKeyRef:
+        name: bindings-secret
+        key: cosmosKey 
+    - name: database
+      value: "dapr"
+    - name: collection
+      value: "outputs"
+    - name: partitionKey
+      value: "id"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: queue-binding
+  namespace: dapr-demo-binding
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: queue-binding
+  template:
+    metadata:
+      labels:
+        app: queue-binding
+      annotations:
+        dapr.io/enabled: "true"
+        dapr.io/app-id: "queue-binding"
+        dapr.io/app-port: "7001"
+        dapr.io/log-level: "info"
+    spec:
+      containers:
+      - name: queue-binding
+        image: <queue-binding-image>
+        resources:
+          requests:
+            cpu: "1"
+            memory: "1Gi"
+          limits:
+            cpu: "1.5"
+            memory: "2Gi"
