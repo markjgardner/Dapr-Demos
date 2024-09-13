@@ -1,0 +1,65 @@
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: statestore
+  namespace: dapr-demo-state
+spec:
+  type: state.redis
+  version: v1
+  metadata:
+  - name: redisHost
+    secretKeyRef:
+      name: redis-secret
+      key: redisHost
+  - name: redisPassword
+    secretKeyRef:
+      name: redis-secret
+      key: redisPassword
+  - name: enableTLS
+    value: "true"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: state-store
+  namespace: dapr-demo-state
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: state-store
+  template:
+    metadata:
+      labels:
+        app: state-store
+      annotations:
+        dapr.io/enabled: "true"
+        dapr.io/app-id: "state-store"
+        dapr.io/app-port: "7001"
+        dapr.io/log-level: "info"
+        dapr.io/app-protocol: "http"
+    spec:
+      containers:
+      - name: state-store
+        image: <state-store-image>
+        resources:
+          requests:
+            cpu: "1"
+            memory: "1Gi"
+          limits:
+            cpu: "1.5"
+            memory: "2Gi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: state-store
+  namespace: dapr-demo-state
+spec:
+  selector:
+    app: state-store
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 7001
+  type: LoadBalancer

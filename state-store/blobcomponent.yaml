@@ -1,0 +1,19 @@
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: statestore
+  namespace: dapr-demo-state
+spec:
+  type: state.azure.blobstorage
+  version: v2
+  metadata:
+  - name: accountName
+    secretKeyRef:
+      name: azureblob-secret
+      key: accountName
+  - name: accountKey
+    secretKeyRef:
+      name: azureblob-secret
+      key: accountKey
+  - name: containerName
+    value: "daprstate"

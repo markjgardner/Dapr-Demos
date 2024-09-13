@@ -1,0 +1,68 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: dapr-demo-services
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order-processor
+  namespace: dapr-demo-services
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: order-processor
+  template:
+    metadata:
+      labels:
+        app: order-processor
+      annotations:
+        dapr.io/enabled: "true"
+        dapr.io/app-id: "order-processor"
+        dapr.io/app-port: "7001"
+        dapr.io/log-level: "info"
+        dapr.io/app-protocol: "http"
+    spec:
+      containers:
+      - name: order-processor
+        image: <order-processor-image>
+        resources:
+          requests:
+            cpu: "1"
+            memory: "1Gi"
+          limits:
+            cpu: "1.5"
+            memory: "2Gi"
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: checkout
+  namespace: dapr-demo-services
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: checkout
+  template:
+    metadata:
+      labels:
+        app: checkout
+      annotations:
+        dapr.io/enabled: "true"
+        dapr.io/app-id: "checkout"
+        dapr.io/log-level: "info"
+    spec:
+      containers:
+      - name: checkout
+        image: <checkout-image>
+        resources:
+          requests:
+            cpu: ".5"
+            memory: "500Mi"
+          limits:
+            cpu: "1"
+            memory: "1Gi"
